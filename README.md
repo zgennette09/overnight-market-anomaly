@@ -48,34 +48,34 @@ Overall, the results show a strong historical overnight pattern, but do **not** 
 
 Daily returns are decomposed into three components:
 
-$$
+```math
 R_{\text{overnight},t}
 =
 \frac{O_t}{C_{t-1}} - 1
-$$
+```
 
-$$
+```math
 R_{\text{intraday},t}
 =
 \frac{C_t}{O_t} - 1
-$$
+```
 
-$$
+```math
 R_{\text{daily},t}
 =
 \frac{C_t}{C_{t-1}} - 1
-$$
+```
 
 where $O_t$ is the opening price and $C_t$ is the closing price.
 
 These satisfy:
 
-$$
+```math
 (1 + R_{\text{daily}})
 =
 (1 + R_{\text{overnight}})
 (1 + R_{\text{intraday}})
-$$
+```
 
 The analysis includes:
 
