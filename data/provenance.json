@@ -1,0 +1,36 @@
+{
+  "source": "Yahoo Finance via yfinance",
+  "downloaded_at_utc": "2026-09-24T23:47:54.893304+00:00",
+  "end_exclusive": "2026-09-01",
+  "spy": {
+    "start": "2000-01-01",
+    "auto_adjust": false,
+    "rows": 6705
+  },
+  "etfs": {
+    "start": "2000-06-01",
+    "auto_adjust": true,
+    "tickers": [
+      "SPY",
+      "QQQ",
+      "IWM",
+      "DIA"
+    ],
+    "rows": 6601
+  },
+  "sha256": {
+    "etfs_adjusted.csv": "b44b8144bd15791292fc904ef0310438e3c6ca665dc9c4eb723c7e24d0a57701",
+    "spy_unadjusted.csv": "1d603298caa29cc4dc50d4084ff5e9bd8c6a08e4e0bdf18ab18ced4e9a7a3eee"
+  },
+  "packages": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "matplotlib": "3.11.1",
+    "scipy": "1.18.1",
+    "yfinance": "1.7.0",
+    "nbformat": "5.11.1",
+    "nbclient": "0.11.0",
+    "nbconvert": "7.17.1",
+    "ipykernel": "7.3.0"
+  }
+}
