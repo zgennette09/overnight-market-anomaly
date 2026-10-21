@@ -1,12 +1,12 @@
 # Overnight Return Anomaly in U.S. Equity Markets
 
-An exploratory Python analysis of overnight and intraday equity ETF returns, with a focus on compounded growth, risk, statistical uncertainty, and extreme observations.
+This Python project compares equity ETF returns earned overnight with those earned during regular trading hours. It examines growth and risk, tests the difference in average returns, and checks how extreme observations affect the outcome.
 
-**[Open the analysis notebook](Analysis.ipynb)** for the charts, calculations, and interpretation, or read the **[one-page project summary](docs/project-summary.pdf)**. Saved notebook outputs are included for review without running the code.
+Read the **[one-page project summary](docs/project-summary.pdf)** for a quick overview, or **[open the notebook](Analysis.ipynb)** for the full analysis. The notebook includes saved charts and results, so you can read it without running the code.
 
 ## Main findings
 
-For SPY from January 2000 through August 2026, **85.91% of cumulative log adjusted return occurred overnight**. Buy-and-hold still finished with greater wealth.
+From January 2000 through August 2026, overnight returns contributed **85.91% of SPY's cumulative log adjusted return**. Buy-and-hold still finished with more wealth.
 
 | Measure | Overnight-only | Buy-and-hold |
 | --- | ---: | ---: |
@@ -14,43 +14,42 @@ For SPY from January 2000 through August 2026, **85.91% of cumulative log adjust
 | Annualized Sharpe ratio | 0.67 | 0.51 |
 | Maximum drawdown | 32.79% | 55.19% |
 
-Baseline results use adjusted prices as a dividend-inclusive return proxy, a zero risk-free rate, and no trading costs.
+The baseline uses adjusted prices to approximate returns including dividends. It assumes a zero risk-free rate and leaves out trading costs.
 
-- **Statistical evidence:** A two-sided paired t-test did not establish a mean overnight-minus-intraday difference at 5% (`p = 0.1577`). This does not prove equality.
-- **Tail sensitivity:** Removing the top 1% of overnight observations reduced terminal wealth from 6.23x to 0.94x. Dates were identified with hindsight; this is not a trading rule.
-- **Across ETFs:** Overnight-only finished ahead of buy-and-hold for QQQ and IWM, but behind for SPY and DIA, in the common adjusted-price sample beginning June 2000.
-- **EMA filter:** Training selected a 306-day exponential moving average. In the 2018-August 2026 historical test, filtered Sharpe was 0.91 versus 0.88 and maximum drawdown was 21.75% versus 29.41% for overnight-only. Filtered wealth was **17.40% lower**, a material tradeoff.
-- **Costs:** Illustrative round-trip costs of 1 and 2 basis points reduced overnight wealth to $3.19 and $1.63, respectively. These are sensitivity scenarios, not estimates of actual execution costs.
+- **Mean returns:** The two-sided paired t-test did not find a statistically significant overnight-minus-intraday mean difference at 5% (`p = 0.1577`). This does not prove the means are equal.
+- **Extreme returns:** Removing the top 1% of overnight observations reduced growth from 6.23x to 0.94x. Those dates were identified with hindsight, so this does not show how to trade around them.
+- **Other ETFs:** In the shared adjusted-price sample starting in June 2000, overnight-only beat buy-and-hold for QQQ and IWM, but not SPY or DIA.
+- **Trend filter:** Training selected a 306-day exponential moving average (EMA). In the 2018-August 2026 historical test, the filter's Sharpe was 0.91 versus 0.88 for overnight-only, and maximum drawdown was 21.75% versus 29.41%. Final wealth was **17.40% lower**. The smaller drawdown came at a substantial cost to growth.
+- **Trading costs:** Assumed round-trip costs of 1 and 2 basis points reduced overnight wealth to $3.19 and $1.63. These scenarios show sensitivity to costs; they do not estimate actual execution costs.
 
-The analysis shows why a strong historical growth pattern does not by itself establish a reliable return advantage.
+The historical pattern is clear, but its reliability remains uncertain.
 
 ## Approach
 
-The notebook compares overnight, intraday, and buy-and-hold returns; evaluates Sharpe ratios and drawdowns; tests mean differences; examines tails and time periods; and evaluates a trend filter. It ends with price-basis and trading-cost sensitivity checks.
+The notebook starts with overnight, intraday, and buy-and-hold growth, then compares risk measures and tests mean returns. Later sections examine extreme observations, changes over time, and an EMA filter. The final section checks how trading costs change the results.
 
-Overnight runs from the previous trading day's close to the current open; intraday runs from open to close. Returns use aligned dates, and checks verify that overnight and intraday growth multiply to buy-and-hold growth. Log returns provide an additive session decomposition.
+Overnight returns run from the previous trading day's close to the current open; intraday returns run from open to close. All strategies use aligned dates. The code checks that overnight growth multiplied by intraday growth equals buy-and-hold growth. Log returns let the two sessions' contributions be added.
 
-The EMA search evaluates 990 spans, from 10 to 999 days, using 2000-2017 training data. The exact winner (306 days) is assigned automatically and evaluated on 2018-August 2026 data. That historical test period has already been examined and is not untouched future evidence.
+The EMA search tests 990 spans, from 10 to 999 days, on 2000-2017 training data. The code selects the best training result (306 days) and applies it to 2018-August 2026. That test period has already been examined during the project, so it is not a fresh test on unseen data.
 
 ## Data and tools
 
-Prices came from Yahoo Finance through `yfinance`. Local snapshots make the analysis reproducible without a new download.
+Prices came from Yahoo Finance through `yfinance`. The saved datasets let you reproduce the analysis without downloading new data.
 
 | Dataset | Coverage | Use |
 | --- | --- | --- |
 | `spy_adjusted.csv` | Jan 3, 2000-Aug 31, 2026 | Main adjusted SPY analysis |
 | `etfs_adjusted.csv` | Jun 1, 2000-Aug 31, 2026 | Adjusted SPY, QQQ, IWM, and DIA comparison |
-| `spy_unadjusted.csv` | Jan 3, 2000-Aug 31, 2026 | Original snapshot; price-basis sensitivity only |
 
-Both main sections now use adjusted prices. Their different starting dates still prevent direct comparisons of terminal wealth across sections. The main SPY sample has 6,705 prices and 6,704 aligned return observations; the four-ETF sample has 6,601 prices.
+Both main sections use adjusted prices, but their starting dates differ. Compare final wealth within each section rather than across them. The main SPY dataset has 6,705 price rows and 6,704 aligned return observations. The four-ETF dataset has 6,601 price rows.
 
-The adjusted SPY file is derived from the original snapshot using `factor = Adj Close / Close`: multiply Open, High, and Low by that factor, set Close to Adj Close, and preserve Volume. This follows [yfinance's auto-adjustment convention](https://github.com/ranaroussi/yfinance/blob/main/yfinance/utils.py). No market data was redownloaded for the adjustment update. Source settings, transformation details, and line-ending-normalized hashes are in [`data/provenance.json`](data/provenance.json).
+The adjusted SPY file is built from the original snapshot using `factor = Adj Close / Close`: multiply Open, High, and Low by that factor, set Close to Adj Close, and preserve Volume. This follows [yfinance's auto-adjustment convention](https://github.com/ranaroussi/yfinance/blob/main/yfinance/utils.py). The adjustment used the existing data rather than a new download. Only the adjusted snapshot is included; the earlier unadjusted source is no longer distributed. [`data/provenance.json`](data/provenance.json) records the source settings, adjustment method, and hashes normalized for line endings.
 
-The project uses **pandas and NumPy** for preparation and calculations, **SciPy** for statistical tests, and **Matplotlib** for charts. [`requirements.txt`](requirements.txt) records the packages used for the updated run.
+The analysis uses **pandas and NumPy** for data preparation and calculations, **SciPy** for statistical tests, and **Matplotlib** for charts. Package versions are listed in [`requirements.txt`](requirements.txt).
 
 ## Run the analysis
 
-The notebook was executed with Python 3.14. From the project folder, create an isolated environment and launch JupyterLab on Windows:
+The notebook was run with Python 3.14. On Windows, open a terminal in the project folder and run:
 
 ```powershell
 python -m venv .venv
@@ -61,21 +60,20 @@ python -m venv .venv
 
 Select the environment's kernel and run all cells in order. Keep `use_saved_data = True` to reproduce the saved snapshots. On macOS or Linux, replace `.venv\Scripts\python` with `.venv/bin/python`.
 
-Set `use_saved_data = False` to download adjusted prices for the configured dates. Provider revisions may change results; September 1, 2026 is the exclusive end date. The price-basis sensitivity section still uses the original local snapshot and requires matching dates. Recheck the narrative after changing data or parameters.
+Set `use_saved_data = False` to download adjusted prices for the configured dates. Provider revisions may change the results. September 1, 2026 is the exclusive end date. Check the written findings again after changing the data or parameters.
 
 ## Assumptions and limitations
 
-- Adjusted returns approximate dividend-inclusive performance. Adjusted historical levels are not executable prices, and explicit dividend cash flows and reinvestment are not reconstructed. The adjustment factor cancels from same-day intraday returns and affects overnight returns across dates.
-- Annualization assumes 252 trading days. The risk-free rate and idle-cash return are zero. Baseline returns exclude spreads, commissions, slippage, taxes, and leverage financing; the notebook separately shows fixed-cost overnight scenarios.
-- The paired test does not explicitly account for dependence across days or changing volatility. Sharpe and drawdown differences are descriptive, without significance tests.
-- Searching 990 EMA spans creates selection risk. The EMA starts without a separate warm-up period, and the historical test was already examined.
-- The filter assumes entry at the same close used to determine its signal. Practical execution requires a signal available before the order cutoff and realistic fills.
+- Adjusted returns approximate returns including dividends. They do not track actual dividend payments or reinvestment, and adjusted price levels are not historical fill prices. The same-day adjustment factor cancels from intraday returns but affects overnight returns across dates.
+- Annualization assumes 252 trading days. The risk-free rate and interest on idle cash are zero. Baseline returns leave out spreads, commissions, slippage, taxes, and leverage financing. A separate section shows assumed fixed overnight trading costs.
+- The paired test does not explicitly handle dependence across days or changing volatility. The notebook reports Sharpe and drawdown differences without testing whether they are statistically significant.
+- Trying 990 EMA spans risks fitting historical noise. The EMA has no separate warm-up period, and the historical test data has already been examined.
+- The filter assumes entry at the same closing price used to form its signal. In practice, the signal must be ready before the order cutoff, and the fill may differ from the closing price.
 
 ## Further work
 
-- Reconstruct distributions and use an executable signal timeline.
-- Test the filter with walk-forward evaluation and nearby EMA spans.
-- Use a block bootstrap to examine uncertainty under dependence.
-- Extend cost scenarios to the filter, idle-cash interest, and leverage financing.
+- Track dividend payments and use signals available before the closing order cutoff.
+- Evaluate the filter with walk-forward tests and nearby EMA spans.
+- Apply trading costs to the filter and include interest on idle cash and leverage financing.
 
 Last reviewed: October 21, 2026.
