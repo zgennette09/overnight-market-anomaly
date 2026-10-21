@@ -1,202 +1,96 @@
 # Overnight Return Anomaly in U.S. Equity Markets
 
-An empirical analysis of the **overnight return anomaly** in U.S. equity ETFs from 2000–2026.
+An exploratory Python analysis of how equity ETF returns differ between overnight and regular trading hours. The project examines compounded growth, risk, statistical uncertainty, and the influence of extreme observations, then evaluates a simple trend filter.
 
-The project investigates how much of equity-market returns occur between the previous day's close and the next day's open rather than during regular trading hours. It compares overnight, intraday, and buy-and-hold returns while examining risk-adjusted performance, statistical significance, tail events, stability over time, and a simple EMA-based risk filter.
+**[Open the analysis notebook](Analysis.ipynb)** for the charts, calculations, and interpretation. Saved outputs are included, so the findings can be reviewed without running the code.
 
-## Key Findings
+## Main findings
 
-- **81.95% of SPY's cumulative log price return occurred overnight** from January 2000 through August 2026.
-- Despite this, **buy-and-hold generated more terminal wealth** than overnight-only:
-  - Buy-and-hold: **$5.27**
-  - Overnight-only: **$3.91**
-  - Intraday-only: **$1.35**
-- Overnight-only had a higher historical **Sharpe ratio**:
-  - Overnight: **0.51**
-  - Buy-and-hold: **0.42**
-- Overnight-only experienced a substantially smaller **maximum drawdown**:
-  - Overnight: **34.76%**
-  - Buy-and-hold: **56.47%**
-- The mean overnight-minus-intraday return difference was **not statistically significant**:
-  - Mean difference: **0.0136% per day**
-  - p-value: **0.3495**
-  - 95% CI: **[-0.0149%, 0.0421%]**
-- The effect was not consistent across ETFs. Overnight-only finished ahead of buy-and-hold for **QQQ and IWM**, but behind for **SPY and DIA**.
-- Extreme returns had a major effect on compounded performance:
-  - Original overnight growth: **3.91×**
-  - Without top 1% of overnight returns: **0.59×**
-  - Without bottom 1%: **36.02×**
-  - Without both tails: **5.46×**
-- A **340-day EMA filter**, selected using 2000–2017 training data, improved the historical risk profile during the 2018–2026 test period:
-  - Sharpe: **0.75 to 1.03**
-  - Maximum drawdown: **29.41% to 20.91%**
-  - Terminal wealth was **0.93% lower** than unfiltered overnight-only.
+For SPY from January 2000 through August 2026, **81.95% of cumulative log price return occurred overnight**. However, buy-and-hold finished with greater wealth than overnight-only.
 
-Overall, the results show a strong historical overnight pattern, but do **not** establish a statistically reliable or proven excess-return strategy.
+| Measure | Overnight-only | Buy-and-hold |
+| --- | ---: | ---: |
+| Final value of an initial $1 | $3.91 | $5.27 |
+| Annualized Sharpe ratio | 0.51 | 0.42 |
+| Maximum drawdown | 34.76% | 56.47% |
 
-## Research Questions
+These results use unadjusted SPY prices, a zero risk-free rate, and no trading costs.
 
-1. How much of SPY's price return comes from overnight versus intraday returns?
-2. Does overnight-only exposure outperform buy-and-hold on a risk-adjusted basis?
-3. Does the anomaly appear across other major U.S. equity ETFs?
-4. Are mean overnight returns statistically different from mean intraday returns?
-5. How sensitive is the anomaly to extreme observations?
-6. Has the anomaly changed over time?
-7. Can a simple EMA filter improve the overnight strategy?
+- **Statistical evidence:** A two-sided paired t-test did not establish a difference between mean overnight and intraday returns at the 5% level (`p = 0.3495`). This does not prove the means are equal.
+- **Tail sensitivity:** Removing the top 1% of overnight observations reduced terminal wealth from 3.91 times the initial investment to 0.59 times. This uses hindsight and is a sensitivity check rather than an achievable trading rule.
+- **Differences across ETFs:** In a separate adjusted-price comparison, overnight-only finished ahead of buy-and-hold for QQQ and IWM, but behind for SPY and DIA.
+- **Trend filter:** During the 2018–August 2026 historical test, a 340-day exponential moving average (EMA) filter increased the overnight strategy's Sharpe ratio from 0.75 to 1.03 and reduced maximum drawdown from 29.41% to 20.91%. Terminal wealth was 0.93% lower than overnight-only.
 
-## Methodology
+The central takeaway is that a strong historical growth pattern does not, by itself, establish a dependable return advantage. Compounding, tail events, and the uncertainty around estimates all affect the interpretation.
 
-Daily returns are decomposed into three components:
+## Approach
 
-```math
-R_{\text{overnight},t}
-=
-\frac{O_t}{C_{t-1}} - 1
+The notebook addresses seven questions:
+
+1. How much of SPY's price return occurs overnight versus intraday?
+2. How do the strategies compare on Sharpe ratio and maximum drawdown?
+3. Does the pattern appear across SPY, QQQ, IWM, and DIA?
+4. Are average overnight and intraday returns statistically distinguishable?
+5. How sensitive is compounded growth to extreme returns?
+6. How does the overnight advantage vary over time?
+7. Can an EMA filter improve the overnight strategy's performance?
+
+Overnight returns run from the previous trading day's close to the current open; intraday returns run from the current open to close. The analysis aligns the return dates and checks that overnight and intraday growth multiply to buy-and-hold growth. Log returns provide an additive decomposition of the two sessions' contributions.
+
+Methods include paired t-tests with confidence intervals, five-year period comparisons, rolling averages, tail analysis, and an EMA parameter search. The search uses 2000–2017 training data; its best span is 338 days, with a nearby rounded choice of 340 days evaluated in the historical test.
+
+## Data and tools
+
+Prices were obtained from Yahoo Finance through `yfinance`. Local snapshots are included for reproducibility.
+
+| Dataset | Coverage | Price basis |
+| --- | --- | --- |
+| Main SPY analysis | January 3, 2000–August 31, 2026 | Unadjusted; excludes dividend income |
+| Four-ETF comparison | June 1, 2000–August 31, 2026 | Adjusted |
+
+The SPY dataset contains 6,705 price rows and 6,704 aligned return observations. The ETF dataset contains 6,601 price rows. Download metadata and recorded file hashes are in [`data/provenance.json`](data/provenance.json).
+
+The analysis uses **pandas and NumPy** for data preparation and calculations, **SciPy** for statistical tests, and **Matplotlib** for visualization. Package versions are recorded in [`requirements.txt`](requirements.txt).
+
+## Run the analysis
+
+The notebook was executed locally with Python 3.14. From the project folder, the following commands create an isolated environment and launch JupyterLab on Windows:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+.venv\Scripts\python -m pip install jupyterlab
+.venv\Scripts\python -m jupyterlab Analysis.ipynb
 ```
 
-```math
-R_{\text{intraday},t}
-=
-\frac{C_t}{O_t} - 1
-```
+Select the environment's Python kernel and run all cells in order. Keep `use_saved_data = True` to use the supplied snapshots; the notebook reads paths relative to the project folder. On macOS or Linux, replace `.venv\Scripts\python` with `.venv/bin/python`.
 
-```math
-R_{\text{daily},t}
-=
-\frac{C_t}{C_{t-1}} - 1
-```
+Set `use_saved_data = False` to download prices for the configured dates instead. This requires internet access, and provider revisions may change the results. The configured end date, September 1, 2026, is exclusive. Recheck the written interpretations whenever inputs or parameters change.
 
-where $O_t$ is the opening price and $C_t$ is the closing price.
-
-These satisfy:
-
-```math
-(1 + R_{\text{daily}})
-=
-(1 + R_{\text{overnight}})
-(1 + R_{\text{intraday}})
-```
-
-The analysis includes:
-
-- Cumulative and log returns
-- Annualized Sharpe ratios
-- Maximum drawdowns
-- Cross-ETF comparisons
-- Paired t-tests and confidence intervals
-- Skewness and return distributions
-- Tail-event sensitivity analysis
-- Rolling and five-year period analysis
-- EMA parameter optimization
-- Historical train/test evaluation
-
-## Data
-
-The main SPY analysis uses **unadjusted daily prices from January 3, 2000 through August 31, 2026**.
-
-The cross-ETF analysis uses adjusted prices for:
-
-- SPY - S&P 500
-- QQQ - Nasdaq-100
-- IWM - Russell 2000
-- DIA - Dow Jones Industrial Average
-
-The ETF comparison begins in June 2000 to maintain a common date range.
-
-Saved datasets are included in `data/` so the analysis can be reproduced without relying on a new Yahoo Finance download.
-
-## EMA Risk Filter
-
-The tail analysis showed that extreme negative overnight returns have a disproportionate effect on compounded performance.
-
-This motivated a simple trend filter:
-
-> Hold overnight only when the previous closing price is above its EMA.
-
-EMA lengths from **10 to 999 days** were evaluated using data from 2000–2017. The selected **340-day EMA** was then evaluated on the 2018–August 2026 historical test period.
-
-| Strategy | Final Wealth | Sharpe | Max Drawdown |
-|---|---:|---:|---:|
-| Buy & Hold | $2.8744 | 0.735 | 34.10% |
-| Overnight | $2.0846 | 0.753 | 29.41% |
-| 340-Day EMA | $2.0651 | 1.028 | 20.91% |
-
-The EMA filter did not improve terminal wealth relative to overnight-only, but it substantially improved the historical Sharpe ratio and maximum drawdown.
-
-This suggests the filter may be more useful as a **risk-management mechanism** than as a return-enhancement strategy.
-
-## Limitations
-
-This project is an exploratory historical analysis rather than evidence of a deployable trading strategy.
-
-Important limitations include:
-
-- Transaction costs and slippage are excluded.
-- Taxes are excluded.
-- Idle cash earns a 0% return.
-- Financing costs are excluded from the hypothetical leveraged analysis.
-- The main SPY analysis uses unadjusted prices while the cross-ETF comparison uses adjusted prices.
-- Searching many EMA parameters introduces the possibility of overfitting.
-- The EMA simulation assumes execution conditions that may not be achievable exactly in practice.
-- The 2018–2026 test period was examined during development and should therefore be considered a historical holdout rather than untouched future evidence.
-
-Future work could include walk-forward testing, block-bootstrap inference, realistic trading costs, consistent adjusted-price data, additional assets, and further analysis of which tail events the EMA filter avoids or misses.
-
-## Repository Structure
+## Project files
 
 ```text
-overnight-market-anomaly/
-├── Analysis.ipynb
-├── README.md
-├── requirements.txt
-├── data/
-│   ├── spy_unadjusted.csv
-│   ├── etfs_adjusted.csv
-│   └── provenance.json
-└── .gitignore
+Analysis.ipynb             Analysis, charts, and interpretation
+requirements.txt          Pinned analysis dependencies
+data/
+  spy_unadjusted.csv       Main SPY price snapshot
+  etfs_adjusted.csv        Adjusted SPY, QQQ, IWM, and DIA prices
+  provenance.json         Source, download settings, and file metadata
 ```
 
-## Reproducing the Analysis
+## Assumptions and limitations
 
-Clone the repository:
+- The main SPY analysis and ETF comparison use different price bases and starting dates. Their magnitudes should not be compared directly; dividend adjustments affect measured overnight returns.
+- Annualization assumes 252 trading days. The risk-free rate and return on idle cash are zero. Spreads, commissions, slippage, taxes, and leverage financing are excluded.
+- The paired t-test does not explicitly account for dependence across days or changing volatility. Sharpe and drawdown comparisons are descriptive, without significance tests for their differences.
+- Searching 990 EMA spans creates selection risk. The historical test period was already examined during the project, so it is not untouched future evidence.
+- The EMA signal uses the previous close and assumes entry at that same closing price. Practical execution would require a signal available before the order cutoff and realistic fills.
 
-```bash
-git clone https://github.com/zgennette09/overnight-market-anomaly.git
-cd overnight-market-anomaly
-```
+## Further work
 
-Install the required packages:
+- Apply consistent dividend treatment across the analysis.
+- Quantify sensitivity to trading costs and returns on idle cash.
+- Evaluate the filter with walk-forward tests and nearby EMA lengths.
+- Use a block bootstrap to examine uncertainty while preserving dependence across observations.
 
-```bash
-pip install -r requirements.txt
-```
-
-Then open and run `Analysis.ipynb` from top to bottom.
-
-By default, the notebook uses the saved datasets included in the repository:
-
-```python
-use_saved_data = True
-```
-
-Set this to `False` to download the data again using `yfinance`.
-
-## Tools
-
-- Python
-- pandas
-- NumPy
-- SciPy
-- Matplotlib
-- yfinance
-- Jupyter Notebook
-
-## Conclusion
-
-The overnight return anomaly is clearly visible in the historical data, but its interpretation is more complicated than cumulative returns alone suggest.
-
-Most of SPY's cumulative log price return occurred overnight, and overnight exposure historically exhibited a higher Sharpe ratio and smaller maximum drawdown than buy-and-hold. However, the difference between mean overnight and intraday returns was not statistically significant, results varied across ETFs and time periods, and extreme observations had a substantial effect on compounded performance.
-
-The EMA experiment further showed that improving a strategy's **risk profile** does not necessarily improve its **terminal return**.
-
-The results support further investigation of overnight exposure and simple risk filters, but they do not establish a proven excess-return strategy.
+Last reviewed: October 21, 2026.
