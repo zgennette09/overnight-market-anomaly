@@ -20,12 +20,34 @@
   },
   "sha256": {
     "etfs_adjusted.csv": "b44b8144bd15791292fc904ef0310438e3c6ca665dc9c4eb723c7e24d0a57701",
+    "spy_adjusted.csv": "26c0774b1fcd4d6e490fba4a6773750ec488273cb6ae40a9e03208ae34908c9c",
     "spy_unadjusted.csv": "1d603298caa29cc4dc50d4084ff5e9bd8c6a08e4e0bdf18ab18ced4e9a7a3eee"
   },
   "packages": {
     "numpy": "2.5.3",
     "pandas": "3.0.5",
     "matplotlib": "3.11.1",
+    "scipy": "1.18.1",
+    "yfinance": "1.7.0",
+    "nbformat": "5.11.1",
+    "nbclient": "0.11.0",
+    "nbconvert": "7.17.1",
+    "ipykernel": "7.3.0"
+  },
+  "spy_adjusted": {
+    "source_file": "spy_unadjusted.csv",
+    "prepared_on": "2026-10-21",
+    "rows": 6705,
+    "transformation": "factor = Adj Close / Close; multiply Open, High, Low by factor; set Close = Adj Close; preserve Volume; drop Adj Close column",
+    "equivalent_to": "yfinance auto_adjust=True using the saved provider snapshot",
+    "method_reference": "https://github.com/ranaroussi/yfinance/blob/main/yfinance/utils.py",
+    "new_market_data_downloaded": false
+  },
+  "sha256_convention": "SHA-256 of UTF-8 file bytes after CRLF-to-LF normalization; preserves hashes across Git line-ending conversion.",
+  "analysis_packages": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "matplotlib": "3.11.2",
     "scipy": "1.18.1",
     "yfinance": "1.7.0",
     "nbformat": "5.11.1",
